@@ -51,4 +51,30 @@ fact_news = data[data['fake_or_factual'] == "Factual News"]
 fake_spaceydocs = list(nlp.pipe(fake_news['text']))
 fact_spaceydocs = list(nlp.pipe(fact_news['text'])) 
 
+# create function to extract tags for each document in our data
+def extract_token_tags(doc:spacy.tokens.doc.Doc):
+    return [(i.text, i.ent_type_, i.pos_) for i in doc]
+
+# tag fake dataset 
+fake_tagsdf = []
+columns = ["token", "ner_tag", "pos_tag"]
+
+for ix, doc in enumerate(fake_spaceydocs):
+    tags = extract_token_tags(doc)
+    tags = pd.DataFrame(tags)
+    tags.columns = columns
+    fake_tagsdf.append(tags)
+        
+fake_tagsdf = pd.concat(fake_tagsdf)   
+
+# tag factual dataset 
+fact_tagsdf = []
+
+for ix, doc in enumerate(fact_spaceydocs):
+    tags = extract_token_tags(doc)
+    tags = pd.DataFrame(tags)
+    tags.columns = columns
+    fact_tagsdf.append(tags)
+        
+fact_tagsdf = pd.concat(fact_tagsdf)   
 
