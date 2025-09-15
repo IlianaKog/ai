@@ -78,3 +78,16 @@ for ix, doc in enumerate(fact_spaceydocs):
         
 fact_tagsdf = pd.concat(fact_tagsdf)   
 
+# token freq count (fake)
+pos_counts_fake = fake_tagsdf.groupby(['token','pos_tag']).size().reset_index(name='counts').sort_values(by='counts', ascending=False)
+pos_counts_fake.head(10)
+
+# token freq count (fact)
+pos_counts_fact = fact_tagsdf.groupby(['token','pos_tag']).size().reset_index(name='counts').sort_values(by='counts', ascending=False)
+pos_counts_fact.head(10)
+
+# freq of pos tags
+pos_counts_fake.groupby(['pos_tag'])['token'].count().sort_values(ascending=False).head(10)
+pos_counts_fact.groupby(['pos_tag'])['token'].count().sort_values(ascending=False).head(10)
+
+
