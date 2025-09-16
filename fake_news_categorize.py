@@ -124,6 +124,7 @@ sns.barplot(
     dodge=False
 ).set(title='Most Common Entities in Fake News')
 
+plt.figure()
 sns.barplot(
     x = 'counts',
     y = 'token',
@@ -132,6 +133,41 @@ sns.barplot(
     data = top_entities_fact[0:10],
     orient = 'h',
     dodge=False
-) \
-.set(title='Most Common Entities in Factual News')
+).set(title='Most Common Entities in Factual News')
 
+#Text-Preprocessing
+
+# factual news : a location tag at the beginning of the article --> regex to remove this
+data['text_clean'] = data.apply(lambda x: re.sub(r"^[^-]*-\s*", "", x['text']), axis=1)
+
+data['text_clean'] = data['text_clean'].str.lower() # lower
+
+data['text_clean'] = data.apply(lambda x: re.sub(r"([^\w\s])", "", x['text_clean']), axis=1) # remove punct
+
+# stop words
+en_stopwords = stopwords.words('english')
+print(en_stopwords) # check this against our most frequent n-grams
+data['text_clean'] = data['text_clean'].apply(lambda x: ' '.join([word for word in x.split() if word not in (en_stopwords)]))
+
+#tokenize
+data['text_clean'] = data.apply(lambda x: word_tokenize(x['text_clean']), axis=1)
+#lemmatize
+lemmatizer = WordNetLemmatizer()
+data["text_clean"] = data["text_clean"].apply(lambda tokens: [lemmatizer.lemmatize(token) for token in tokens])
+
+# unigrams after preprocessing
+tokens_clean = sum(data['text_clean'], [])
+unigrams = (pd.Series(nltk.ngrams(tokens_clean, 1)).value_counts()).reset_index()[:10]
+print(unigrams)
+# extract the token from the tuple so --> plot it
+unigrams['token'] = unigrams['index'].apply(lambda x: x[0]) 
+plt.figure()
+sns.barplot(x = "count", 
+            y = "token", 
+            data=unigrams.sort_values("count", ascending=False),
+            orient = 'h',
+            hue = "token").set(title='Most Common Unigrams After Preprocessing')
+
+# bigrams after preprocessing
+bigrams = (pd.Series(nltk.ngrams(tokens_clean, 2)).value_counts()) 
+print(bigrams[:10])
