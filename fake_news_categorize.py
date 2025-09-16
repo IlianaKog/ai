@@ -18,7 +18,7 @@ from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 from nltk.corpus import stopwords
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-import gensim
+from gensim import corpora, models
 import gensim.corpora as corpora
 from gensim.models.coherencemodel import CoherenceModel
 from gensim.models import LsiModel, TfidfModel
@@ -184,4 +184,46 @@ data['vader_sentiment_label'] = pd.cut(data['vader_sentiment_score'], bins, labe
 plt.figure()
 data['vader_sentiment_label'].value_counts().plot.bar()
 
+plt.figure()
+sns.countplot(
+    x = 'fake_or_factual',
+    hue = 'vader_sentiment_label',
+    palette = sns.color_palette("hls"),
+    data = data
+).set(title='Sentiment by News Type')
+
+# LDA
+print("LDA")
+# vectorization fake news
+fake_news_text = data[data['fake_or_factual'] == "Fake News"]['text_clean'].reset_index(drop=True)
+dictionary_fake = corpora.Dictionary(fake_news_text)
+doc_term_fake = [dictionary_fake.doc2bow(text) for text in fake_news_text]
+
+# optimum num of topics via coherence
+coherence_values = []
+model_list = []
+
+min_topics = 2
+max_topics = 8
+
+for num_topics_i in range(min_topics, max_topics+1):
+    model = models.LdaModel(doc_term_fake, num_topics=num_topics_i, id2word = dictionary_fake)
+    model_list.append(model)
+    coherence_model = CoherenceModel(model=model, texts=fake_news_text, dictionary=dictionary_fake, coherence='c_v')
+    coherence_values.append(coherence_model.get_coherence())
+
+plt.figure()
+plt.plot(range(min_topics, max_topics+1), coherence_values)
+plt.xlabel("Number of Topics")
+plt.ylabel("Coherence score")
+plt.legend(("coherence_values"), loc='best')
+plt.show()
+
+# lda model
+num_topics_fake = 6 
+lda_model_fake = models.LdaModel(corpus=doc_term_fake,
+                                       id2word=dictionary_fake,
+                                       num_topics=num_topics_fake)
+
+print(lda_model_fake.print_topics(num_topics=num_topics_fake, num_words=10))
 
