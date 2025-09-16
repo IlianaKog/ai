@@ -90,4 +90,48 @@ pos_counts_fact.head(10)
 pos_counts_fake.groupby(['pos_tag'])['token'].count().sort_values(ascending=False).head(10)
 pos_counts_fact.groupby(['pos_tag'])['token'].count().sort_values(ascending=False).head(10)
 
+# dive into differences in nouns
+pos_counts_fake[pos_counts_fake.pos_tag == "NOUN"][0:15]
+pos_counts_fact[pos_counts_fact.pos_tag == "NOUN"][0:15]
+
+#NAMED ENTITIES
+# top entities in fake news
+top_entities_fake = fake_tagsdf[fake_tagsdf['ner_tag'] != ""].groupby(['token','ner_tag']).size().reset_index(name='counts') .sort_values(by='counts', ascending=False)
+# top entities in fact news
+top_entities_fact = fact_tagsdf[fact_tagsdf['ner_tag'] != ""] \
+                    .groupby(['token','ner_tag']).size().reset_index(name='counts') \
+                    .sort_values(by='counts', ascending=False)                    
+
+# create custom palette --> plots
+ner_palette = {
+    'ORG': sns.color_palette("Set2").as_hex()[0],
+    'GPE': sns.color_palette("Set2").as_hex()[1],
+    'NORP': sns.color_palette("Set2").as_hex()[2],
+    'PERSON': sns.color_palette("Set2").as_hex()[3],
+    'DATE': sns.color_palette("Set2").as_hex()[4],
+    'CARDINAL': sns.color_palette("Set2").as_hex()[5],
+    'PERCENT': sns.color_palette("Set2").as_hex()[6]
+}          
+      
+plt.figure()
+sns.barplot(
+    x = 'counts',
+    y = 'token',
+    hue = 'ner_tag',
+    palette = ner_palette,
+    data = top_entities_fake[0:10],
+    orient = 'h',
+    dodge=False
+).set(title='Most Common Entities in Fake News')
+
+sns.barplot(
+    x = 'counts',
+    y = 'token',
+    hue = 'ner_tag',
+    palette = ner_palette,
+    data = top_entities_fact[0:10],
+    orient = 'h',
+    dodge=False
+) \
+.set(title='Most Common Entities in Factual News')
 
