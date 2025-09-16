@@ -171,3 +171,17 @@ sns.barplot(x = "count",
 # bigrams after preprocessing
 bigrams = (pd.Series(nltk.ngrams(tokens_clean, 2)).value_counts()) 
 print(bigrams[:10])
+
+# Sentiment Analysis
+vader_sentiment = SentimentIntensityAnalyzer()
+data['vader_sentiment_score'] = data['text'].apply(lambda review: vader_sentiment.polarity_scores(review)['compound'])
+
+# labels
+bins = [-1, -0.1, 0.1, 1]
+names = ['negative', 'neutral', 'positive']
+
+data['vader_sentiment_label'] = pd.cut(data['vader_sentiment_score'], bins, labels=names)
+plt.figure()
+data['vader_sentiment_label'].value_counts().plot.bar()
+
+
