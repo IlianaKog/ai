@@ -222,8 +222,39 @@ plt.show()
 # lda model
 num_topics_fake = 6 
 lda_model_fake = models.LdaModel(corpus=doc_term_fake,
-                                       id2word=dictionary_fake,
-                                       num_topics=num_topics_fake)
+                                        id2word=dictionary_fake,
+                                        num_topics=num_topics_fake)
 
 print(lda_model_fake.print_topics(num_topics=num_topics_fake, num_words=10))
+
+# TF-IDF & LSA -- > we try this, LDA not so good
+def tfidf_corpus(doc_term_matrix):
+    # create a corpus using tfidf vecotization
+    tfidf = TfidfModel(corpus=doc_term_matrix, normalize=True)
+    corpus_tfidf = tfidf[doc_term_matrix]
+    return corpus_tfidf
+
+def get_coherence_scores(corpus, dictionary, text, min_topics, max_topics):
+    # generate coherence scores to determine an optimum number of topics
+    coherence_values = []
+    model_list = []
+    for num_topics_i in range(min_topics, max_topics+1):
+        model = LsiModel(corpus, num_topics=num_topics_i, id2word = dictionary, random_seed=0)
+        model_list.append(model)
+        coherence_model = CoherenceModel(model=model, texts=text, dictionary=dictionary, coherence='c_v')
+        coherence_values.append(coherence_model.get_coherence())
+    # plot results
+    plt.figure()
+    plt.plot(range(min_topics, max_topics+1), coherence_values)
+    plt.xlabel("Number of Topics")
+    plt.ylabel("Coherence score")
+    plt.legend(("coherence_values"), loc='best')
+    plt.show()
+
+# tfidf corpus
+corpus_tfidf_fake = tfidf_corpus(doc_term_fake)
+# coherence scores for fake news data
+get_coherence_scores(corpus_tfidf_fake, dictionary_fake, fake_news_text, min_topics=2, max_topics=11)
+
+
 
