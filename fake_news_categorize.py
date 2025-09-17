@@ -256,5 +256,8 @@ corpus_tfidf_fake = tfidf_corpus(doc_term_fake)
 # coherence scores for fake news data
 get_coherence_scores(corpus_tfidf_fake, dictionary_fake, fake_news_text, min_topics=2, max_topics=11)
 
+# model for fake news data
+lsa_fake = LsiModel(corpus_tfidf_fake, id2word=dictionary_fake, num_topics=5)
+lsa_fake.print_topics()
 
 
