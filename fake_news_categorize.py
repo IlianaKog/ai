@@ -260,4 +260,19 @@ get_coherence_scores(corpus_tfidf_fake, dictionary_fake, fake_news_text, min_top
 lsa_fake = LsiModel(corpus_tfidf_fake, id2word=dictionary_fake, num_topics=5)
 lsa_fake.print_topics()
 
+# ----------------------------Predict fake / factual news----------------------
 
+X = [','.join(map(str, l)) for l in data['text_clean']]
+Y = data['fake_or_factual']
+
+# text vectorization
+countvec = CountVectorizer()
+countvec_fit = countvec.fit_transform(X)
+bag_of_words = pd.DataFrame(countvec_fit.toarray(), columns = countvec.get_feature_names_out())
+
+X_train, X_test, y_train, y_test = train_test_split(bag_of_words, Y, test_size=0.3)
+
+lr = LogisticRegression(random_state=0).fit(X_train, y_train)
+y_pred_lr = lr.predict(X_test)
+print(accuracy_score(y_pred_lr, y_test))
+print(classification_report(y_test, y_pred_lr))
